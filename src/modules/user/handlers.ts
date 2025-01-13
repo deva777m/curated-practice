@@ -1,9 +1,10 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import Joi from 'joi';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from './model';
 import config from './config';
+import AppError from '../../utils/AppError';
 
 
 // Define schema for the user
@@ -20,30 +21,30 @@ const loginSchema = Joi.object({
 });
 
 const userHandlers = {
-    get: async (req: Request, res: Response) => {
+    get: async (req: Request, res: Response, next: NextFunction) => {
         const id = req.body.user.id;
         try {
             if(!id) { 
-                return res.status(400).send("Name is required");
+                throw new AppError("Name is required", 400);
+                return res.status(400).send();
             }
             // Get the user by id
             const user = await User.findOne({ _id: id });
             
             res.status(200).json(user);
         } catch (error) {
-            console.error("Error getting the user: ", error);
-            res.status(500).send("Error getting the user");
+            next(error);
         }
     },
 
-    post: async (req: Request, res: Response) => {
-        // Validate the request body
-        const { error, value } = userSchema.validate(req.body);
-        if (error) {
-            return res.status(400).json(error);
-        }
-
+    post: async (req: Request, res: Response, next: NextFunction) => {
         try {
+            // Validate the request body
+            const { error, value } = userSchema.validate(req.body);
+            if (error) {
+                throw new AppError(error.details[0].message, 400);
+            }
+
             // Hash the password
             const hashedPassword = await bcrypt.hash(value.password, 10);
             
@@ -55,44 +56,51 @@ const userHandlers = {
             newUser.password = '';
             res.status(201).json(newUser);
         } catch (error) {
-            console.error("Error saving the user: ", error);
-            res.status(500).send("Error saving the user");
+            next(error);
         }
     },
 
-    login: async (req: Request, res: Response) => {
-        // Validate the request body against the login schema
-        const { error, value } = loginSchema.validate(req.body);
-        if (error) {
-            return res.status(400).json({ error: error.details[0].message });
-        }
-
-        const { email, password } = value;
+    login: async (req: Request, res: Response, next: NextFunction) => {
         try {
+            // Validate the request body against the login schema
+            const { error, value } = loginSchema.validate(req.body);
+            if (error) {
+                throw new AppError(error.details[0].message, 400);
+            }
+            
+            const { email, password } = value;
+
             // Find the user by email
             const user = await User.findOne({ email });
             if (!user) {
-                return res.status(401).json({ error: 'Invalid email' });
+                throw new AppError("Invalid email", 401);
             }
 
             // Compare the hashed password
             const isMatch = await bcrypt.compare(password, user.password);
             if (!isMatch) {
-                return res.status(401).json({ error: 'Invalid email or password' });
+                throw new AppError("Invalid email or password", 401);
             }
 
             // Generate an access token
             if (!config.jwt.secret) {
-                throw new Error("JWT secret is not defined");
+                throw new AppError("JWT secret is not defined", 500);
             }
 
             const token = jwt.sign({ id: user.id, email: user.email }, config.jwt.secret, { expiresIn: '1h' });
             res.status(200).json({ token });
         } catch (error) {
-            console.error("Error logging in: ", error);
-            res.status(500).send("Error logging in");
+            next(error);
         }
-    }
+    },
+
+    // catch: async (req: Request, res: Response, next: NextFunction) => {
+    //     console.log("This is a test error");
+    //     console.log(req.body);
+    //     throw new AppError("This is a test error", 500);
+    //     res.status(200).send();
+    //     next();
+    // },
 
 }
 
