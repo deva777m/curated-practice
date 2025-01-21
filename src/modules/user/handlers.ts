@@ -26,7 +26,6 @@ const userHandlers = {
         try {
             if(!id) { 
                 throw new AppError("Name is required", 400);
-                return res.status(400).send();
             }
             // Get the user by id
             const user = await User.findOne({ _id: id });

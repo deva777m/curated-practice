@@ -1,5 +1,4 @@
 import express from 'express';
-import { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 
 const app = express();
@@ -13,10 +12,15 @@ import errorHandling from './utils/middlewares/errorHandling';
 import errorHandler from './utils/ErrorHandler';
 import AppError from './utils/AppError';
 
+import {loggerMiddleware} from './utils/middlewares/logger';
+
 // connect to database
 userModule.connectDB();
 
 app.use(express.json());
+
+//middlewares
+app.use(loggerMiddleware);
 
 // routes
 app.use('/user', userModule.router);
@@ -27,7 +31,7 @@ app.get('/', (req, res) => {
 });
 
 // handle errors and responds with json
-app.use((err: Error | AppError, req: Request, res: Response, next: NextFunction) => {errorHandling(err, req, res, next)});
+app.use(errorHandling);
 
 // unhandled exception
 process.on('unhandledRejection', (error: Error) => {

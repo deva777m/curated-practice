@@ -1,4 +1,5 @@
 import AppError from "./AppError";
+import logger from "../config/logger";
 
 const errorHandler = (error: Error | AppError) => {
     
@@ -8,14 +9,15 @@ const errorHandler = (error: Error | AppError) => {
             // handle non operational errors
             // close dependencies, etc
             // add critical error logging
-            console.error("Critical error: ", error);
+            logger.error("Critical error", error);
             process.exit(1);
         }
+        logger.error('AppError', error);
         return error;
     }
 
     // log error
-    console.log(error);
+    logger.error('Error', error);
     return new AppError("Internal server error", 500);
 };
 
