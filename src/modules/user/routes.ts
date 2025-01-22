@@ -1,6 +1,6 @@
 import { Router } from "express";
 // import { Request, Response, NextFunction } from "express";
-import { jwtAuthenticate } from "./auth";
+import { jwtAuthenticate } from "../../utils/middlewares/auth";
 import handler from "./handlers";
 // import AppError from "../../utils/AppError";
 

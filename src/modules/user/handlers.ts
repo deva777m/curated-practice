@@ -3,7 +3,7 @@ import Joi from 'joi';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User } from './model';
-import config from './config';
+import config from '../../config/config';
 import AppError from '../../utils/AppError';
 
 

@@ -18,7 +18,7 @@ const errorHandler = (error: Error | AppError) => {
 
     // log error
     logger.error('Error', error);
-    return new AppError("Internal server error", 500);
+    return new AppError(error.message, 500);
 };
 
 export default errorHandler;

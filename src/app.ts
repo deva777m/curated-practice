@@ -3,27 +3,29 @@ import dotenv from 'dotenv';
 
 const app = express();
 
+app.use(express.json());
+
 // load environment variables
 dotenv.config({path: 'src/.env'});
 
+// connect to database
+import connectDB from './config/db';
+connectDB();
+
 // import user module
 import userModule from './modules/user';
+import problemsetModule from './modules/problemset';
 import errorHandling from './utils/middlewares/errorHandling';
 import errorHandler from './utils/ErrorHandler';
 import AppError from './utils/AppError';
-
 import {loggerMiddleware} from './utils/middlewares/logger';
-
-// connect to database
-userModule.connectDB();
-
-app.use(express.json());
 
 //middlewares
 app.use(loggerMiddleware);
 
 // routes
 app.use('/user', userModule.router);
+app.use('/problemset', problemsetModule.router);
 
 app.get('/', (req, res) => {
     console.log(req.headers);

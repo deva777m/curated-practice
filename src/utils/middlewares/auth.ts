@@ -1,6 +1,7 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import {NextFunction, Request, Response} from 'express';
-import config from './config';
+import config from '../../config/config';
+import AppError from '../AppError';
 
 export const jwtAuthenticate = async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
@@ -10,10 +11,14 @@ export const jwtAuthenticate = async (req: Request, res: Response, next: NextFun
 
     try {
         const decoded = jwt.verify(token, config.jwt.secret!);
-        req.body.user = decoded;
+        const user = decoded as JwtPayload;
+        if(user && user.id) {
+            req.body.userId = user.id;
+        } else {
+            throw new AppError('User Not Found', 401);
+        }
         next();
     } catch (error) {
-        console.error("Error decoding the token: ", error);
-        res.status(500).send("Error decoding the token");
+        next(error);
     }
 };
