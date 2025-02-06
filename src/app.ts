@@ -15,6 +15,7 @@ connectDB();
 // import user module
 import userModule from './modules/user';
 import problemsetModule from './modules/problemset';
+import scrapperModule from './modules/scrapper';
 import errorHandling from './utils/middlewares/errorHandling';
 import errorHandler from './utils/ErrorHandler';
 import AppError from './utils/AppError';
@@ -26,6 +27,7 @@ app.use(loggerMiddleware);
 // routes
 app.use('/user', userModule.router);
 app.use('/problemset', problemsetModule.router);
+app.use('/scrapper', scrapperModule.router);
 
 app.get('/', (req, res) => {
     console.log(req.headers);
