@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import config from "./config";
+import logger from "./logger";
 
 // Define the database connection
 const connectDB = async () => {
@@ -7,7 +8,7 @@ const connectDB = async () => {
         await mongoose.connect(`mongodb://${config.db.host}:${config.db.port}/${config.db.database}`);
         console.log("Connected to the database");
     } catch (error) {
-        console.error("Error connecting to the database: ", error);
+        logger.error("Error connecting to the database: ", error);
         process.exit(1);
     }
 };
